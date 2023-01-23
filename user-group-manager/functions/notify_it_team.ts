@@ -1,5 +1,4 @@
-import { DefineFunction, SlackFunctionArguments } from "deno-slack-sdk/mod.ts";
-import { Datastore } from "https://deno.land/x/deno_slack_sdk/datastore.ts";
+import { DefineFunction, SlackFunctionArguments } from "https://deno.land/x/deno_slack_sdk@1.4.4/mod.ts";
 
 interface ITTeamRequest {
   status: string;
@@ -27,23 +26,23 @@ export const NotifyITTeam = DefineFunction({
   },
   async handler(args: SlackFunctionArguments) {
     const { request_id } = args.inputs;
-    const dataStore = new Datastore({ token: Deno.env.get('SLACK_TOKEN') });
+
     try {
       // Get the request from the datastore
-      const request = await dataStore.get('request', request_id);
+      const request = await args.slack.datastore.get("request", request_id);
       const { requester_id, request_reason } = request;
       
       // Get the members of the IT Team
-      const itTeamMembers = await dataStore.get("it_team", "members");
+      const itTeamMembers = await args.slack.datastore.get("it_team", "members");
 
       // Send direct message to each IT Team member
       for (const itTeamMember of itTeamMembers) {
-        const dmConversation = await args.slack.webClient.conversations.create({
+        const dmConversation = await args.slack.conversations.create({
           users: itTeamMember,
         });
-        const user = await args.slack.webClient.users.info({ user: requester_id });
+        const user = await args.slack.users.info({ user: requester_id });
         const message = `New Request from ${user.user.name}: ${request_reason}\nRequest ID: ${request_id}\nUse /approve_request ${request_id} or /decline_request ${request_id} in this direct message to approve or decline this request`;
-        await args.slack.webClient.chat.postMessage({
+        await args.slack.chat.postMessage({
           channel: dmConversation.channel.id,
           text: message,
         });

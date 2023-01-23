@@ -1,9 +1,9 @@
-import { WebClient } from "https://deno.land/x/slack_webhook/mod.ts";
+import { Slack, WebClient } from "https://deno.land/x/deno_slack_sdk@1.4.4/mod.ts";
 
-//Get token from environment variable
-const SLACK_TOKEN = Deno.env.get("SLACK_TOKEN") || "";
+const SLACK_TOKEN = Deno.env.get("SLACK_APP_TOKEN") || "";
 
-const webClient = new WebClient(SLACK_TOKEN);
+const slack = new Slack(SLACK_TOKEN);
+const webClient = new WebClient();
 
 /**
  * Get the members of an IT Team usergroup
@@ -11,12 +11,10 @@ const webClient = new WebClient(SLACK_TOKEN);
  * @param {string} it_team_id - The ID of the IT Team user group
  */
 export async function getITTeamMembers(it_team_id: string) {
-  const { members } = await webClient.usergroups.users.list({
-    usergroup: it_team_id,
-    include_disabled: true,
-  });
-
-  return members;
+    const members = await webClient.users.list({
+        usergroup_id: it_team_id
+    });
+    return members;
 }
 
 /**
@@ -26,6 +24,6 @@ export async function getITTeamMembers(it_team_id: string) {
  * @param {string} it_team_id - The ID of the IT Team user group
  */
 export async function isUserInITTeam(user_id: string, it_team_id: string) {
-  const members = await getITTeamMembers(it_team_id);
-  return members.includes(user_id);
+    const members = await getITTeamMembers(it_team_id);
+    return members.users.map(x => x.id).includes(user_id);
 }

@@ -1,7 +1,6 @@
-import { Manifest } from "deno-slack-sdk/mod.ts";
-import { ManageUserGroupFunction } from "./functions/manage_user_group.ts";
-import { ManageUserGroup } from "./functions/manage_user_group.ts";
-import { triggers } from "./triggers/triggers.ts";
+import { Manifest } from "https://deno.land/x/deno_slack_sdk@1.4.4/mod.ts";
+import { addUserToGroup, removeUserFromGroup } from "./functions/manage_user_groups.ts";
+import { RequestApprovalTrigger } from "./triggers/triggers.ts";
 
 export default Manifest({
   name: "user-group-manager",
@@ -9,11 +8,11 @@ export default Manifest({
   icon: "assets/icon.png",
   functions: [
     {
-      definition: ManageUserGroupFunction,
-      handler: ManageUserGroup
+      definition: addUserToGroup, removeUserFromGroup,
+      handler: addUserToGroup, removeUserFromGroup
     }
   ],
-  triggers: triggers,
+  triggers: RequestApprovalTrigger,
   outgoingDomains: [],
   botScopes: ["commands","users:read","usergroups:write", "usergroups:read"]
 });
